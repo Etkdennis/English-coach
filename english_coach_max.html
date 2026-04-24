@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>English Coach MAX</title>
+<style>
+body { font-family: Arial; background:#eef1f5; padding:15px; }
+h1 { margin-bottom:5px; }
+.card { background:white; padding:15px; border-radius:12px; margin:10px 0; box-shadow:0 2px 6px rgba(0,0,0,0.1); }
+input { width:100%; padding:10px; margin-top:10px; border-radius:10px; border:1px solid #ccc; }
+button { margin-top:10px; padding:10px; border:none; border-radius:10px; background:#007AFF; color:white; font-weight:bold; }
+.correct { background:#d4f8d4; }
+.wrong { background:#ffd6d6; }
+.stats { margin:10px 0; font-weight:bold; }
+.small { font-size:13px; color:#555; }
+</style>
+</head>
+<body>
+
+<h1>English Coach MAX 🧠🔥</h1>
+<div class="stats" id="stats"></div>
+
+<div class="card">
+  <div id="question"></div>
+  <input id="answer" placeholder="Type in English..." />
+  <button onclick="check()">Check</button>
+  <button onclick="hint()">Hint</button>
+  <div id="feedback"></div>
+</div>
+
+<div class="card small">
+<b>Stats:</b>
+<div id="mistakes"></div>
+</div>
+
+<script>
+
+const verbs = [
+["go","went","gone"],
+["see","saw","seen"],
+["take","took","taken"],
+["make","made","made"],
+["write","wrote","written"],
+["eat","ate","eaten"],
+["drink","drank","drunk"],
+["drive","drove","driven"],
+["buy","bought","bought"],
+["come","came","come"],
+["find","found","found"],
+["give","gave","given"],
+["meet","met","met"]
+];
+
+const objects = ["a message","a pizza","a car","a book","a mistake"];
+const times = ["yesterday","last night","this week","today"];
+
+let score = +localStorage.getItem("score") || 0;
+let level = +localStorage.getItem("level") || 1;
+let streak = +localStorage.getItem("streak") || 0;
+let lives = +localStorage.getItem("lives") || 5;
+let mistakes = JSON.parse(localStorage.getItem("mistakes") || "{}");
+
+let current;
+
+function updateStats(){
+  document.getElementById("stats").innerText =
+  `Score: ${score} | Level: ${level} | 🔥 ${streak} | ❤️ ${lives}`;
+
+  let m = Object.entries(mistakes).map(([k,v])=> k + ": " + v).join("<br>");
+  document.getElementById("mistakes").innerHTML = m || "No mistakes yet";
+}
+
+function generate(){
+  let v = verbs[Math.floor(Math.random()*verbs.length)];
+  let obj = objects[Math.floor(Math.random()*objects.length)];
+  let time = times[Math.floor(Math.random()*times.length)];
+
+  if(level < 3){
+    current = {
+      it: "Ho " + obj,
+      en: "i have " + v[2] + " " + obj,
+      tip: "Present perfect → have + past participle"
+    };
+  } else if(level < 6){
+    current = {
+      it: "Ieri ho " + obj,
+      en: "i " + v[1] + " " + obj + " yesterday",
+      tip: "Past simple → verbo 2"
+    };
+  } else {
+    current = {
+      it: "Questa settimana ho " + obj,
+      en: "i have " + v[2] + " " + obj + " this week",
+      tip: "Present perfect"
+    };
+  }
+
+  document.getElementById("question").innerText = current.it;
+  document.getElementById("answer").value = "";
+  document.getElementById("feedback").innerHTML = "";
+}
+
+function normalize(s){
+  return s.toLowerCase().trim();
+}
+
+function similar(a,b){
+  return a.includes(b) || b.includes(a);
+}
+
+function check(){
+  let input = document.getElementById("answer");
+  let user = normalize(input.value);
+
+  if(user === current.en){
+    input.className = "correct";
+    document.getElementById("feedback").innerHTML = "✅ Perfect";
+    score++; streak++;
+    if(score % 5 === 0) level++;
+  } else if(similar(user,current.en)){
+    input.className = "wrong";
+    document.getElementById("feedback").innerHTML =
+    "⚠️ Almost!<br>✔ " + current.en + "<br>💡 " + current.tip;
+    streak = 0; lives--;
+  } else {
+    input.className = "wrong";
+    document.getElementById("feedback").innerHTML =
+    "❌ Wrong<br>✔ " + current.en + "<br>💡 " + current.tip;
+    streak = 0; lives--;
+  }
+
+  // track mistakes
+  let verb = current.en.split(" ")[2];
+  mistakes[verb] = (mistakes[verb] || 0) + 1;
+
+  if(lives <= 0){
+    alert("Game Over");
+    score=0; level=1; streak=0; lives=5;
+    mistakes = {};
+  }
+
+  localStorage.setItem("score", score);
+  localStorage.setItem("level", level);
+  localStorage.setItem("streak", streak);
+  localStorage.setItem("lives", lives);
+  localStorage.setItem("mistakes", JSON.stringify(mistakes));
+
+  updateStats();
+  setTimeout(generate, 1200);
+}
+
+function hint(){
+  document.getElementById("feedback").innerHTML = "💡 " + current.tip;
+}
+
+updateStats();
+generate();
+
+</script>
+
+</body>
+</html>
