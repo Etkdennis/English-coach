@@ -2,7 +2,7 @@
 <html>
 <head>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>English Trainer</title>
+<title>AI English Coach</title>
 
 <style>
 body {
@@ -37,17 +37,22 @@ button {
   margin-top:15px;
   font-weight:bold;
 }
+.context {
+  margin-bottom:10px;
+  font-size:14px;
+}
 </style>
 </head>
 
 <body>
 
-<h2>English Trainer 🧠</h2>
+<h2>AI English Coach 🧠</h2>
 
 <div class="card">
-  <div id="question"></div>
+  <div class="context" id="context"></div>
+  <div id="scenario"></div>
 
-  <input id="answer" placeholder="Write your translation..." />
+  <input id="answer" placeholder="Say something natural..." />
 
   <button onclick="check()">Check</button>
 
@@ -56,99 +61,99 @@ button {
 
 <script>
 
-// FRASI REALI
-let sentences = [
-  {it:"Io ascolto musica", en:"I listen to music"},
-  {it:"Loro ascoltano musica", en:"They listen to music"},
-  {it:"Noi guardiamo un film", en:"We watch a movie"},
-  {it:"Io bevo caffè", en:"I drink coffee"},
-  {it:"Tu mangi un panino", en:"You eat a sandwich"},
-  {it:"Io studio inglese", en:"I study english"},
-  {it:"Loro lavorano in ufficio", en:"They work in the office"},
-  {it:"Io sono a casa", en:"I am at home"},
-  {it:"Noi andiamo al bar", en:"We go to the bar"},
-  {it:"Io ho mangiato ieri", en:"I ate yesterday"},
-  {it:"Loro hanno bevuto caffè", en:"They drank coffee"},
-  {it:"Domani lavoro", en:"I will work tomorrow"},
-  {it:"Io vado in palestra", en:"I go to the gym"},
-  {it:"Lei guarda la TV", en:"She watches TV"},
-  {it:"Io leggo un libro", en:"I read a book"},
-  {it:"Noi studiamo oggi", en:"We study today"},
-  {it:"Io dormo poco", en:"I sleep little"},
-  {it:"Loro viaggiano spesso", en:"They travel often"}
+// ⚠️ SE VUOI AI VERA → INSERISCI QUI LA KEY
+const API_KEY = ""; // <-- metti qui la tua key
+
+// SCENARI REALI
+let scenarios = [
+  {context:"Bar", text:"Ordina qualcosa", keywords:["coffee","beer","water","want","have"]},
+  {context:"Amico", text:"Proponi di uscire", keywords:["go","out","tonight","come"]},
+  {context:"Lavoro", text:"Dì che sei occupato", keywords:["busy","working","now"]},
+  {context:"Telefono", text:"Dì che richiami dopo", keywords:["call","later"]},
+  {context:"Viaggio", text:"Chiedi dove è l’hotel", keywords:["where","hotel"]},
 ];
 
 let current = {};
 
-// NORMALIZE (intelligente)
-function normalize(text){
-  return text
-    .toLowerCase()
-    .replace("i'm", "i am")
-    .replace("you're", "you are")
-    .replace("we're", "we are")
-    .replace("they're", "they are")
-    .replace("it's", "it is")
-    .replace("don't", "do not")
-    .replace("can't", "cannot")
-    .replace(/[.,!?]/g, "")
-    .replace(/\b(a|an|the)\b/g, "")
-    .replace(/\s+/g, " ")
-    .trim();
+function rand(arr){
+  return arr[Math.floor(Math.random() * arr.length)];
 }
 
-// SIMILARITÀ
-function similarity(a, b){
-  let wordsA = a.split(" ");
-  let wordsB = b.split(" ");
-
-  let matches = 0;
-
-  wordsA.forEach(word => {
-    if(wordsB.includes(word)) matches++;
-  });
-
-  return matches / Math.max(wordsA.length, wordsB.length);
-}
-
-// GENERA FRASE
+// GENERA SCENARIO
 function generate(){
-  current = sentences[Math.floor(Math.random() * sentences.length)];
-
-  document.getElementById("question").innerText = current.it;
+  current = rand(scenarios);
+  document.getElementById("context").innerText = current.context;
+  document.getElementById("scenario").innerText = current.text;
   document.getElementById("answer").value = "";
   document.getElementById("feedback").innerText = "";
 }
 
-// CHECK INTELLIGENTE
-function check(){
+// FALLBACK (senza AI)
+function basicCheck(user){
+  let score = 0;
+  current.keywords.forEach(k=>{
+    if(user.includes(k)) score++;
+  });
 
-  let userRaw = document.getElementById("answer").value;
-  let correctRaw = current.en;
+  if(score >= 2) return "✅ Good sentence!";
+  if(score === 1) return "🟡 Almost, expand it.";
+  return "❌ Try again (more natural English)";
+}
 
-  let user = normalize(userRaw);
-  let correct = normalize(correctRaw);
+// AI CHECK
+async function aiCheck(user){
 
-  let scoreMatch = similarity(user, correct);
+  try {
+    let res = await fetch("https://api.openai.com/v1/chat/completions",{
+      method:"POST",
+      headers:{
+        "Content-Type":"application/json",
+        "Authorization":"Bearer " + API_KEY
+      },
+      body: JSON.stringify({
+        model:"gpt-4.1-mini",
+        messages:[
+          {
+            role:"system",
+            content:"You are an English teacher. Correct and improve sentences. Be concise."
+          },
+          {
+            role:"user",
+            content:`User said: "${user}". Give correction + short explanation.`
+          }
+        ]
+      })
+    });
 
+    let data = await res.json();
+    return data.choices[0].message.content;
+
+  } catch {
+    return "Errore AI";
+  }
+}
+
+// CHECK
+async function check(){
+
+  let user = document.getElementById("answer").value.toLowerCase();
   let feedback = document.getElementById("feedback");
-  let delay = 1500;
 
-  if(user === correct){
-    feedback.innerText = "✅ Perfect!";
+  // se NON hai API
+  if(!API_KEY){
+    feedback.innerText = basicCheck(user);
+    setTimeout(generate,4000);
+    return;
   }
 
-  else if(scoreMatch > 0.7){
-    feedback.innerText = "🟡 Almost correct → " + correctRaw;
-    delay = 5000;
-  }
+  // se hai API
+  feedback.innerText = "Thinking...";
 
-  else{
-    feedback.innerText = "❌ " + correctRaw;
-    delay = 10000;
-  }
+  let result = await aiCheck(user);
 
-  setTimeout(generate, delay);
+  feedback.innerText = result;
+
+  setTimeout(generate,6000);
 }
 
 // START
