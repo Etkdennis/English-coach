@@ -70,25 +70,35 @@ let lives = parseInt(localStorage.getItem("lives")) || 3;
 let score = parseInt(localStorage.getItem("score")) || 0;
 let streak = parseInt(localStorage.getItem("streak")) || 0;
 
-// DATI GENERAZIONE (2000+ frasi)
+// SUBJECTS
 let subjects = [
-  {it:"Io", en:"I"},
-  {it:"Tu", en:"You"},
-  {it:"Noi", en:"We"},
-  {it:"Loro", en:"They"}
+  {it:"Io", en:"I", key:"io"},
+  {it:"Tu", en:"You", key:"tu"},
+  {it:"Noi", en:"We", key:"noi"},
+  {it:"Loro", en:"They", key:"loro"}
 ];
 
+// VERBS (CORRETTI)
 let verbs = [
-  {it:"mangio", en:"eat", past:"ate"},
-  {it:"bevo", en:"drink", past:"drank"},
-  {it:"vedo", en:"see", past:"saw"},
-  {it:"compro", en:"buy", past:"bought"},
-  {it:"trovo", en:"find", past:"found"},
-  {it:"guardo", en:"watch", past:"watched"},
-  {it:"studio", en:"study", past:"studied"},
-  {it:"ascolto", en:"listen", past:"listened"}
+  {
+    it:{io:"vedo", tu:"vedi", noi:"vediamo", loro:"vedono"},
+    base:"see", past:"saw"
+  },
+  {
+    it:{io:"mangio", tu:"mangi", noi:"mangiamo", loro:"mangiano"},
+    base:"eat", past:"ate"
+  },
+  {
+    it:{io:"bevo", tu:"bevi", noi:"beviamo", loro:"bevono"},
+    base:"drink", past:"drank"
+  },
+  {
+    it:{io:"ascolto", tu:"ascolti", noi:"ascoltiamo", loro:"ascoltano"},
+    base:"listen", past:"listened"
+  }
 ];
 
+// OBJECTS
 let objects = [
   {it:"un libro", en:"a book"},
   {it:"un film", en:"a movie"},
@@ -98,6 +108,7 @@ let objects = [
   {it:"inglese", en:"english"}
 ];
 
+// PLACES
 let places = [
   {it:"a casa", en:"at home"},
   {it:"al lavoro", en:"at work"},
@@ -105,6 +116,7 @@ let places = [
   {it:"in ufficio", en:"in the office"}
 ];
 
+// TIMES
 let times = [
   {it:"oggi", type:"present", en:"today"},
   {it:"ieri", type:"past", en:"yesterday"},
@@ -134,12 +146,14 @@ function generate(){
   let place = rand(places);
   let time = rand(times);
 
-  let it = `${subject.it} ${verb.it} ${object.it} ${place.it} ${time.it}`;
+  let itVerb = verb.it[subject.key];
+
+  let it = `${subject.it} ${itVerb} ${object.it} ${place.it} ${time.it}`;
 
   let en = "";
 
   if(time.type === "present"){
-    en = `${subject.en} ${verb.en} ${object.en} ${place.en} ${time.en}`;
+    en = `${subject.en} ${verb.base} ${object.en} ${place.en} ${time.en}`;
   }
 
   if(time.type === "past"){
@@ -147,7 +161,7 @@ function generate(){
   }
 
   if(time.type === "future"){
-    en = `${subject.en} will ${verb.en} ${object.en} ${place.en} ${time.en}`;
+    en = `${subject.en} will ${verb.base} ${object.en} ${place.en} ${time.en}`;
   }
 
   current = {it, en};
@@ -174,7 +188,7 @@ function check(){
     feedback.innerText = "❌ " + correct;
     lives--;
     streak = 0;
-    delay = 10000; // ⏱ 10 secondi se sbagli
+    delay = 10000; // 10 sec se sbagli
   }
 
   localStorage.setItem("lives", lives);
