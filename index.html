@@ -40,11 +40,27 @@ button {
 <div class="card">
   <div id="question">Ho mangiato ieri</div>
   <input id="answer" placeholder="Write or speak..." />
-  <button onclick="check()">Check</button>
+  <button onclick="checkTranslation()">Check</button>
   <div id="feedback"></div>
 </div>
 
 <script>
+async function checkTranslation() {
+  const input = document.getElementById("answer").value;
+
+  const response = await fetch("/check", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({ text: input })
+  });
+
+  const data = await response.json();
+
+  document.getElementById("result").innerText = data.result;
+}
+</script>
 
 async function check(){
 
