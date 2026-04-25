@@ -40,12 +40,20 @@ Keep it simple.`
 
     const data = await response.json();
 
-    const result = data.output[0].content[0].text;
+    console.log("OPENAI:", data); // debug
+
+    let result = "Errore AI 😅";
+
+    if (data.output_text) {
+      result = data.output_text;
+    } else if (data.output && data.output[0]?.content?.[0]?.text) {
+      result = data.output[0].content[0].text;
+    }
 
     res.json({ result });
 
   } catch (err) {
-    console.log(err);
+    console.log("ERROR:", err);
     res.json({
       result: "Errore AI 😅"
     });
