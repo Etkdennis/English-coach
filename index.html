@@ -2,7 +2,7 @@
 <html>
 <head>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>English Coach</title>
+<title>English Trainer</title>
 
 <style>
 body {
@@ -10,12 +10,15 @@ body {
   background: linear-gradient(135deg,#141e30,#243b55);
   color:white;
   padding:20px;
+  text-align:center;
 }
 .card {
   background:white;
   color:black;
   padding:20px;
   border-radius:15px;
+  max-width:400px;
+  margin:auto;
 }
 input {
   width:100%;
@@ -30,36 +33,64 @@ button {
   color:white;
   border:none;
 }
+#feedback {
+  margin-top:15px;
+  font-weight:bold;
+}
 </style>
 </head>
 
 <body>
 
-<h2>English Coach</h2>
+<h2>English Trainer 🧠</h2>
 
 <div class="card">
-  <div id="question">Ho mangiato ieri</div>
+  <div id="question"></div>
   <input id="answer" placeholder="Write your translation..." />
   <button onclick="check()">Check</button>
+  <button onclick="next()">Next</button>
   <div id="feedback"></div>
 </div>
 
 <script>
+
+let phrases = [
+  {it:"Ho mangiato ieri", en:["i ate yesterday"]},
+  {it:"Vado al lavoro", en:["i go to work","i am going to work"]},
+  {it:"Sto studiando inglese", en:["i am studying english"]},
+  {it:"Ho visto quel film", en:["i saw that movie"]},
+  {it:"Mi piace il caffè", en:["i like coffee"]},
+  {it:"Sono stanco oggi", en:["i am tired today"]},
+  {it:"Domani lavoro", en:["i work tomorrow","i am working tomorrow"]}
+];
+
+let current = 0;
+
+function loadQuestion(){
+  current = Math.floor(Math.random() * phrases.length);
+  document.getElementById("question").innerText = phrases[current].it;
+  document.getElementById("answer").value = "";
+  document.getElementById("feedback").innerText = "";
+}
+
 function check(){
   let user = document.getElementById("answer").value.trim().toLowerCase();
+  let correctAnswers = phrases[current].en;
 
-  let validAnswers = [
-    "i ate yesterday",
-    "yesterday i ate"
-  ];
-
-  if(validAnswers.includes(user)){
-    document.getElementById("feedback").innerHTML = "✅ Corretto!";
+  if(correctAnswers.includes(user)){
+    document.getElementById("feedback").innerText = "✅ Correct!";
   } else {
-    document.getElementById("feedback").innerHTML =
-      "❌ Sbagliato. Risposta corretta: <b>I ate yesterday</b>";
+    document.getElementById("feedback").innerText =
+      "❌ Correct: " + correctAnswers[0];
   }
 }
+
+function next(){
+  loadQuestion();
+}
+
+loadQuestion();
+
 </script>
 
 </body>
