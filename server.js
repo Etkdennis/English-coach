@@ -1,9 +1,6 @@
 const express = require("express");
 const path = require("path");
 
-// FIX FETCH
-const fetch = (...args) => import('node-fetch').then(({default: fetch}) => fetch(...args));
-
 const app = express();
 
 app.use(express.json());
@@ -19,7 +16,7 @@ app.post("/check", async (req, res) => {
   const user = req.body.text;
 
   try {
-    const response = await fetch("https://api.openai.com/v1/chat/completions", {
+    const response = await fetch("https://api.openai.com/v1/responses", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -27,24 +24,25 @@ app.post("/check", async (req, res) => {
       },
       body: JSON.stringify({
         model: "gpt-4.1-mini",
-        messages: [
-          {
-            role: "system",
-            content: "You are an English teacher. Be concise."
-          },
-          {
-            role: "user",
-            content: `Correct this sentence: "${user}". Explain briefly and give correct version.`
-          }
-        ]
+        input: `You are an English teacher.
+Correct this sentence:
+
+"${user}"
+
+Explain:
+1. If it's correct
+2. If wrong, why
+3. Give correct sentence
+
+Keep it simple.`
       })
     });
 
     const data = await response.json();
 
-    res.json({
-      result: data.choices?.[0]?.message?.content || "Errore AI 😅"
-    });
+    const result = data.output[0].content[0].text;
+
+    res.json({ result });
 
   } catch (err) {
     console.log(err);
