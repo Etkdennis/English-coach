@@ -47,8 +47,7 @@ button {
 <div class="card">
   <div id="question"></div>
   <input id="answer" placeholder="Write your translation..." />
-  <button onclick="check()">Check</button>
-  <button onclick="next()">Next</button>
+  <button id="checkBtn" onclick="check()">Check</button>
   <div id="feedback"></div>
 </div>
 
@@ -64,10 +63,17 @@ let phrases = [
   {it:"Domani lavoro", en:["i work tomorrow","i am working tomorrow"]}
 ];
 
-let current = 0;
+let current = -1;
 
 function loadQuestion(){
-  current = Math.floor(Math.random() * phrases.length);
+  let newIndex;
+
+  do {
+    newIndex = Math.floor(Math.random() * phrases.length);
+  } while (newIndex === current); // evita stessa frase
+
+  current = newIndex;
+
   document.getElementById("question").innerText = phrases[current].it;
   document.getElementById("answer").value = "";
   document.getElementById("feedback").innerText = "";
@@ -77,18 +83,26 @@ function check(){
   let user = document.getElementById("answer").value.trim().toLowerCase();
   let correctAnswers = phrases[current].en;
 
+  let feedback = document.getElementById("feedback");
+  let btn = document.getElementById("checkBtn");
+
   if(correctAnswers.includes(user)){
-    document.getElementById("feedback").innerText = "✅ Correct!";
+    feedback.innerText = "✅ Correct!";
   } else {
-    document.getElementById("feedback").innerText =
-      "❌ Correct: " + correctAnswers[0];
+    feedback.innerText = "❌ Correct: " + correctAnswers[0];
   }
+
+  // blocca bottone
+  btn.disabled = true;
+
+  // dopo 1.5s cambia frase
+  setTimeout(() => {
+    btn.disabled = false;
+    loadQuestion();
+  }, 1500);
 }
 
-function next(){
-  loadQuestion();
-}
-
+// prima frase
 loadQuestion();
 
 </script>
