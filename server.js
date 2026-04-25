@@ -6,31 +6,48 @@ const app = express();
 app.use(express.json());
 app.use(express.static(__dirname));
 
-// ROUTE HOME
+// HOME
 app.get("/", (req, res) => {
   res.sendFile(path.join(__dirname, "index.html"));
 });
 
-// ROUTE AI (semplice logica intelligente)
-app.post("/check", (req, res) => {
-  const user = req.body.text.toLowerCase().trim();
+// AI ROUTE
+app.post("/check", async (req, res) => {
+  const user = req.body.text;
 
-  const correct = "i ate yesterday";
+  try {
+    const response = await fetch("https://api.openai.com/v1/chat/completions", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${process.env.OPENAI_API_KEY}`
+      },
+      body: JSON.stringify({
+        model: "gpt-4.1-mini",
+        messages: [
+          {
+            role: "system",
+            content: "You are an English teacher. Be concise."
+          },
+          {
+            role: "user",
+            content: `Correct this sentence: "${user}". Explain briefly and give correct version.`
+          }
+        ]
+      })
+    });
 
-  if (user === correct) {
-    return res.json({ result: "✅ Perfetto!" });
-  }
+    const data = await response.json();
 
-  // piccoli errori accettati
-  if (user.includes("i") && user.includes("yesterday")) {
-    return res.json({
-      result: "🟡 Quasi! Forma corretta: 'I ate yesterday'"
+    res.json({
+      result: data.choices[0].message.content
+    });
+
+  } catch (err) {
+    res.json({
+      result: "Errore AI 😅"
     });
   }
-
-  return res.json({
-    result: "❌ Sbagliato. Traduzione corretta: 'I ate yesterday'"
-  });
 });
 
 const PORT = process.env.PORT || 3000;
