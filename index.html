@@ -62,59 +62,67 @@ button {
 <script>
 
 // SCENARI
-let scenarios = ["Aeroporto","Bar","Ristorante","Hotel","Taxi","Lavoro","Telefono","Amico","Viaggio","Negozio"];
-
-// INTENTI (logici)
-let intents = [
-  {it:"Cerco", base:"looking for"},
-  {it:"Voglio", base:"want"},
-  {it:"Ho bisogno di", base:"need"},
-  {it:"Vorrei", base:"would like"}
+let scenarios = [
+"Aeroporto","Bar","Ristorante","Hotel","Taxi","Lavoro","Telefono","Amico",
+"Viaggio","Negozio","Supermercato","Palestra","Casa","Cinema","Strada",
+"Ufficio","Colloquio","Riunione","Farmacia","Scuola","Treno","Bus",
+"Centro città","Weekend","Appuntamento","Montagna","Spiaggia","Ospedale"
 ];
 
-// OGGETTI
+// PARTI
+let starters = ["Voglio","Vorrei","Ho bisogno di","Cerco"];
+let startersEN = ["I want","I would like","I need","I am looking for"];
+
 let objects = [
-  {it:"un biglietto", en:"a ticket"},
-  {it:"un caffè", en:"a coffee"},
-  {it:"un taxi", en:"a taxi"},
-  {it:"una stanza", en:"a room"}
+["un caffè","a coffee"],
+["un biglietto","a ticket"],
+["un taxi","a taxi"],
+["una stanza","a room"],
+["acqua","water"],
+["il menu","the menu"],
+["aiuto","help"]
 ];
 
-// LUOGHI
 let places = [
-  {it:"per Londra", en:"to London"},
-  {it:"in centro", en:"to the city center"},
-  {it:"qui", en:"here"}
+["per Londra","to London"],
+["in centro","to the city center"],
+["qui","here"],
+["all’hotel","at the hotel"],
+["a casa","at home"]
 ];
 
+// COSTRUZIONE 300+ FRASI
+let exercises = [];
+
+for(let s=0;s<starters.length;s++){
+  for(let o=0;o<objects.length;o++){
+    for(let p=0;p<places.length;p++){
+
+      let it = `${starters[s]} ${objects[o][0]} ${places[p][0]}`;
+      let en = `${startersEN[s]} ${objects[o][1]} ${places[p][1]}`;
+
+      exercises.push({
+        context: scenarios[Math.floor(Math.random()*scenarios.length)],
+        it,
+        en
+      });
+
+    }
+  }
+}
+
+// SHUFFLE (NO RIPETIZIONI)
+function shuffle(array){
+  for (let i = array.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [array[i], array[j]] = [array[j], array[i]];
+  }
+}
+
+shuffle(exercises);
+
+let index = 0;
 let current = {};
-
-// RANDOM
-function rand(arr){
-  return arr[Math.floor(Math.random()*arr.length)];
-}
-
-// GENERATE
-function generate(){
-
-  let scenario = rand(scenarios);
-  let intent = rand(intents);
-  let obj = rand(objects);
-  let place = rand(places);
-
-  let it = `${intent.it} ${obj.it} ${place.it}`;
-
-  current = {
-    it,
-    obj: obj.en,
-    place: place.en
-  };
-
-  document.getElementById("context").innerText = "📍 " + scenario;
-  document.getElementById("question").innerText = it;
-  document.getElementById("answer").value = "";
-  document.getElementById("feedback").innerText = "";
-}
 
 // NORMALIZE
 function normalize(text){
@@ -128,50 +136,63 @@ function normalize(text){
     .trim();
 }
 
-// CHECK INTELLIGENTE GLOBALE
-function check(){
-
-  let user = normalize(document.getElementById("answer").value);
-
-  let feedback = document.getElementById("feedback");
-  let delay = 1500;
-
-  // pattern corretti
-  let patterns = [
-    `i am looking for ${current.obj} ${current.place}`,
-    `i want ${current.obj} ${current.place}`,
-    `i need ${current.obj} ${current.place}`,
-    `i would like ${current.obj} ${current.place}`
-  ];
-
-  let ok = patterns.some(p => similarity(user, p) > 0.7);
-
-  // ERRORI INTELLIGENTI
-  if(user.includes("find")){
-    feedback.innerText = "❌ 'find' non si usa così → usa 'looking for'";
-    delay = 6000;
-  }
-  else if(!user.includes("i")){
-    feedback.innerText = "❌ Serve il soggetto → 'I...'";
-    delay = 5000;
-  }
-  else if(ok){
-    feedback.innerText = "✅ Natural English!";
-  }
-  else{
-    feedback.innerText = "🟡 Better: I am looking for " + current.obj + " " + current.place;
-    delay = 5000;
-  }
-
-  setTimeout(generate, delay);
-}
-
 // SIMILARITY
 function similarity(a,b){
   let A = a.split(" ");
   let B = b.split(" ");
   let match = A.filter(w => B.includes(w)).length;
   return match / Math.max(A.length,B.length);
+}
+
+// GENERATE (SENZA RIPETERE)
+function generate(){
+
+  if(index >= exercises.length){
+    shuffle(exercises);
+    index = 0;
+  }
+
+  current = exercises[index];
+  index++;
+
+  document.getElementById("context").innerText = "📍 " + current.context;
+  document.getElementById("question").innerText = current.it;
+
+  document.getElementById("answer").value = "";
+  document.getElementById("feedback").innerText = "";
+}
+
+// CHECK INTELLIGENTE
+function check(){
+
+  let user = normalize(document.getElementById("answer").value);
+  let correct = normalize(current.en);
+
+  let feedback = document.getElementById("feedback");
+  let delay = 1500;
+
+  let variations = [
+    correct,
+    correct.replace("i am looking for","i want"),
+    correct.replace("i am looking for","i need"),
+    correct.replace("i am looking for","i would like")
+  ];
+
+  let ok = variations.some(v => similarity(user, v) > 0.7);
+
+  if(user.includes("find")){
+    feedback.innerText = "❌ Usa 'looking for', non 'find'";
+    delay = 6000;
+  }
+  else if(ok){
+    feedback.innerText = "✅ Natural!";
+  }
+  else{
+    feedback.innerText = "🟡 Better: " + current.en;
+    delay = 5000;
+  }
+
+  setTimeout(generate, delay);
 }
 
 // START
