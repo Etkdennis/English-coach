@@ -2,7 +2,7 @@
 <html>
 <head>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>English Trainer PRO</title>
+<title>English Trainer</title>
 
 <style>
 body {
@@ -40,16 +40,12 @@ button {
   margin-top:15px;
   font-weight:bold;
 }
-select {
-  margin-bottom:10px;
-  padding:8px;
-}
 </style>
 </head>
 
 <body>
 
-<h2>English Trainer 🚀</h2>
+<h2>English Trainer 🧠</h2>
 
 <div class="topbar">
 ❤️ <span id="lives"></span> |
@@ -57,20 +53,12 @@ select {
 🔥 <span id="streak">0</span>
 </div>
 
-<select id="mode">
-  <option value="write">✍️ Writing</option>
-  <option value="listen">🎧 Listening</option>
-  <option value="speak">🎤 Speaking</option>
-</select>
-
 <div class="card">
   <div id="question"></div>
 
-  <input id="answer" placeholder="Your answer..." />
+  <input id="answer" placeholder="Write your translation..." />
 
   <button onclick="check()">Check</button>
-  <button onclick="startVoice()">🎤 Speak</button>
-  <button onclick="playAudio()">🔊 Listen</button>
 
   <div id="feedback"></div>
 </div>
@@ -82,7 +70,7 @@ let lives = parseInt(localStorage.getItem("lives")) || 3;
 let score = parseInt(localStorage.getItem("score")) || 0;
 let streak = parseInt(localStorage.getItem("streak")) || 0;
 
-// COMPONENTI (GENERANO 2000+ FRASI)
+// DATI GENERAZIONE (2000+ frasi)
 let subjects = [
   {it:"Io", en:"I"},
   {it:"Tu", en:"You"},
@@ -164,21 +152,7 @@ function generate(){
 
   current = {it, en};
 
-  let mode = document.getElementById("mode").value;
-
-  if(mode === "write"){
-    document.getElementById("question").innerText = it;
-  }
-
-  if(mode === "listen"){
-    document.getElementById("question").innerText = "🎧 Listen...";
-    playAudio();
-  }
-
-  if(mode === "speak"){
-    document.getElementById("question").innerText = it;
-  }
-
+  document.getElementById("question").innerText = it;
   document.getElementById("answer").value = "";
   document.getElementById("feedback").innerText = "";
 }
@@ -190,6 +164,7 @@ function check(){
   let correct = current.en;
 
   let feedback = document.getElementById("feedback");
+  let delay = 1500;
 
   if(user === correct){
     feedback.innerText = "✅ Correct!";
@@ -199,6 +174,7 @@ function check(){
     feedback.innerText = "❌ " + correct;
     lives--;
     streak = 0;
+    delay = 10000; // ⏱ 10 secondi se sbagli
   }
 
   localStorage.setItem("lives", lives);
@@ -218,32 +194,7 @@ function check(){
     return;
   }
 
-  setTimeout(generate, 1500);
-}
-
-// 🎤 VOICE INPUT
-function startVoice(){
-
-  if (!('webkitSpeechRecognition' in window)) {
-    alert("Voice not supported");
-    return;
-  }
-
-  let recognition = new webkitSpeechRecognition();
-  recognition.lang = "en-US";
-  recognition.start();
-
-  recognition.onresult = function(event) {
-    document.getElementById("answer").value =
-      event.results[0][0].transcript;
-  };
-}
-
-// 🔊 AUDIO
-function playAudio(){
-  let utterance = new SpeechSynthesisUtterance(current.en);
-  utterance.lang = "en-US";
-  speechSynthesis.speak(utterance);
+  setTimeout(generate, delay);
 }
 
 // START
