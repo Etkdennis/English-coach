@@ -61,58 +61,32 @@ button {
 
 <script>
 
-// 30 SCENARI
-let scenarios = [
-"Aeroporto","Bar","Ristorante","Hotel","Taxi","Lavoro","Telefono","Amico",
-"Viaggio","Negozio","Supermercato","Palestra","Casa","Cinema","Strada",
-"Ufficio","Colloquio","Riunione","Ospedale","Farmacia","Scuola",
-"Università","Treno","Bus","Noleggio auto","Spiaggia","Montagna",
-"Centro città","Appuntamento","Weekend"
-];
+// SCENARI
+let scenarios = ["Aeroporto","Bar","Ristorante","Hotel","Taxi","Lavoro","Telefono","Amico","Viaggio","Negozio"];
 
-// INTENZIONI REALI
+// INTENTI (logici)
 let intents = [
-
-{it:"Vorrei", en:"I would like"},
-{it:"Posso avere", en:"Can I have"},
-{it:"Ho bisogno di", en:"I need"},
-{it:"Cerco", en:"I am looking for"},
-{it:"Voglio", en:"I want"},
-{it:"Devo", en:"I have to"}
-
+  {it:"Cerco", base:"looking for"},
+  {it:"Voglio", base:"want"},
+  {it:"Ho bisogno di", base:"need"},
+  {it:"Vorrei", base:"would like"}
 ];
 
-// OGGETTI LOGICI
+// OGGETTI
 let objects = [
-{it:"un caffè", en:"a coffee"},
-{it:"un biglietto", en:"a ticket"},
-{it:"un taxi", en:"a taxi"},
-{it:"il menu", en:"the menu"},
-{it:"informazioni", en:"information"},
-{it:"aiuto", en:"help"},
-{it:"una stanza", en:"a room"},
-{it:"acqua", en:"water"}
+  {it:"un biglietto", en:"a ticket"},
+  {it:"un caffè", en:"a coffee"},
+  {it:"un taxi", en:"a taxi"},
+  {it:"una stanza", en:"a room"}
 ];
 
 // LUOGHI
 let places = [
-{it:"per Londra", en:"to London"},
-{it:"in centro", en:"to the city center"},
-{it:"qui", en:"here"},
-{it:"al lavoro", en:"at work"},
-{it:"a casa", en:"at home"},
-{it:"all’hotel", en:"at the hotel"}
+  {it:"per Londra", en:"to London"},
+  {it:"in centro", en:"to the city center"},
+  {it:"qui", en:"here"}
 ];
 
-// DOMANDE
-let questions = [
-{it:"Dove si trova", en:"Where is"},
-{it:"Quanto costa", en:"How much is"},
-{it:"A che ora è", en:"What time is"},
-{it:"Posso sapere", en:"Can I know"}
-];
-
-// FRASE CORRENTE
 let current = {};
 
 // RANDOM
@@ -120,43 +94,24 @@ function rand(arr){
   return arr[Math.floor(Math.random()*arr.length)];
 }
 
-// GENERAZIONE INTELLIGENTE
+// GENERATE
 function generate(){
 
   let scenario = rand(scenarios);
+  let intent = rand(intents);
+  let obj = rand(objects);
+  let place = rand(places);
 
-  let type = Math.random();
+  let it = `${intent.it} ${obj.it} ${place.it}`;
 
-  let it = "";
-  let en = "";
-
-  // 70% frasi normali
-  if(type < 0.7){
-
-    let intent = rand(intents);
-    let obj = rand(objects);
-    let place = rand(places);
-
-    it = `${intent.it} ${obj.it} ${place.it}`;
-    en = `${intent.en} ${obj.en} ${place.en}`;
-
-  } 
-  // 30% domande
-  else {
-
-    let q = rand(questions);
-    let obj = rand(objects);
-
-    it = `${q.it} ${obj.it}`;
-    en = `${q.en} ${obj.en}`;
-
-  }
-
-  current = {it, en};
+  current = {
+    it,
+    obj: obj.en,
+    place: place.en
+  };
 
   document.getElementById("context").innerText = "📍 " + scenario;
   document.getElementById("question").innerText = it;
-
   document.getElementById("answer").value = "";
   document.getElementById("feedback").innerText = "";
 }
@@ -173,38 +128,50 @@ function normalize(text){
     .trim();
 }
 
+// CHECK INTELLIGENTE GLOBALE
+function check(){
+
+  let user = normalize(document.getElementById("answer").value);
+
+  let feedback = document.getElementById("feedback");
+  let delay = 1500;
+
+  // pattern corretti
+  let patterns = [
+    `i am looking for ${current.obj} ${current.place}`,
+    `i want ${current.obj} ${current.place}`,
+    `i need ${current.obj} ${current.place}`,
+    `i would like ${current.obj} ${current.place}`
+  ];
+
+  let ok = patterns.some(p => similarity(user, p) > 0.7);
+
+  // ERRORI INTELLIGENTI
+  if(user.includes("find")){
+    feedback.innerText = "❌ 'find' non si usa così → usa 'looking for'";
+    delay = 6000;
+  }
+  else if(!user.includes("i")){
+    feedback.innerText = "❌ Serve il soggetto → 'I...'";
+    delay = 5000;
+  }
+  else if(ok){
+    feedback.innerText = "✅ Natural English!";
+  }
+  else{
+    feedback.innerText = "🟡 Better: I am looking for " + current.obj + " " + current.place;
+    delay = 5000;
+  }
+
+  setTimeout(generate, delay);
+}
+
 // SIMILARITY
 function similarity(a,b){
   let A = a.split(" ");
   let B = b.split(" ");
   let match = A.filter(w => B.includes(w)).length;
   return match / Math.max(A.length,B.length);
-}
-
-// CHECK
-function check(){
-
-  let user = normalize(document.getElementById("answer").value);
-  let correct = normalize(current.en);
-
-  let sim = similarity(user, correct);
-
-  let feedback = document.getElementById("feedback");
-  let delay = 1500;
-
-  if(user === correct){
-    feedback.innerText = "✅ Perfect!";
-  }
-  else if(sim > 0.7){
-    feedback.innerText = "🟡 Almost → " + current.en;
-    delay = 4000;
-  }
-  else{
-    feedback.innerText = "❌ " + current.en;
-    delay = 8000;
-  }
-
-  setTimeout(generate, delay);
 }
 
 // START
