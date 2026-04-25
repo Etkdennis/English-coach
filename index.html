@@ -2,7 +2,7 @@
 <html>
 <head>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>English Coach AI</title>
+<title>English Coach</title>
 
 <style>
 body {
@@ -30,41 +30,32 @@ button {
   color:white;
   border:none;
 }
-#feedback {
-  margin-top:15px;
-  font-weight:bold;
-}
 </style>
 </head>
 
 <body>
 
-<h2>English Coach AI 🧠</h2>
+<h2>English Coach</h2>
 
 <div class="card">
   <div id="question">Ho mangiato ieri</div>
-  <input id="answer" placeholder="Write or speak..." />
-  <button onclick="checkTranslation()">Check</button>
+  <input id="answer" placeholder="Write your translation..." />
+  <button onclick="check()">Check</button>
   <div id="feedback"></div>
 </div>
 
 <script>
-async function checkTranslation() {
-  const input = document.getElementById("answer").value;
+function check(){
+  let user = document.getElementById("answer").value.trim().toLowerCase();
+  let correct = "i ate yesterday";
 
-  document.getElementById("feedback").innerText = "Thinking... 🤖";
-
-  const response = await fetch("/check", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json"
-    },
-    body: JSON.stringify({ text: input })
-  });
-
-  const data = await response.json();
-
-  document.getElementById("feedback").innerText = data.result;
+  if(user === correct){
+    document.getElementById("feedback").innerHTML =
+      "✅ Corretto!";
+  } else {
+    document.getElementById("feedback").innerHTML =
+      "❌ Sbagliato. Risposta corretta: <b>" + correct + "</b>";
+  }
 }
 </script>
 
