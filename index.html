@@ -47,14 +47,17 @@ button {
 <script>
 function check(){
   let user = document.getElementById("answer").value.trim().toLowerCase();
-  let correct = "i ate yesterday";
 
-  if(user === correct){
-    document.getElementById("feedback").innerHTML =
-      "✅ Corretto!";
+  let validAnswers = [
+    "i ate yesterday",
+    "yesterday i ate"
+  ];
+
+  if(validAnswers.includes(user)){
+    document.getElementById("feedback").innerHTML = "✅ Corretto!";
   } else {
     document.getElementById("feedback").innerHTML =
-      "❌ Sbagliato. Risposta corretta: <b>" + correct + "</b>";
+      "❌ Sbagliato. Risposta corretta: <b>I ate yesterday</b>";
   }
 }
 </script>
