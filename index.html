@@ -53,57 +53,76 @@ button {
 
 <script>
 
-let phrases = [
-  {it:"Ho mangiato ieri", en:["i ate yesterday"]},
-  {it:"Vado al lavoro", en:["i go to work","i am going to work"]},
-  {it:"Sto studiando inglese", en:["i am studying english"]},
-  {it:"Ho visto quel film", en:["i saw that movie"]},
-  {it:"Mi piace il caffè", en:["i like coffee"]},
-  {it:"Sono stanco oggi", en:["i am tired today"]},
-  {it:"Domani lavoro", en:["i work tomorrow","i am working tomorrow"]}
+// VOCABOLI
+let subjects = ["i", "you", "we", "they"];
+let verbs = [
+  {it:"mangio", en:"eat"},
+  {it:"bevo", en:"drink"},
+  {it:"vedo", en:"see"},
+  {it:"compro", en:"buy"},
+  {it:"trovo", en:"find"}
 ];
+let objects = ["pane", "caffè", "un film", "un libro"];
+let times = ["oggi", "ieri", "domani"];
 
-let current = -1;
+// stato corrente
+let current = {};
 
-function loadQuestion(){
-  let newIndex;
+// funzione random
+function rand(arr){
+  return arr[Math.floor(Math.random() * arr.length)];
+}
 
-  do {
-    newIndex = Math.floor(Math.random() * phrases.length);
-  } while (newIndex === current); // evita stessa frase
+// genera frase
+function generate(){
+  let subject = rand(subjects);
+  let verb = rand(verbs);
+  let object = rand(objects);
+  let time = rand(times);
 
-  current = newIndex;
+  // italiano
+  let it = subject + " " + verb.it + " " + object + " " + time;
 
-  document.getElementById("question").innerText = phrases[current].it;
+  // inglese base
+  let enVerb = verb.en;
+
+  if(time === "ieri"){
+    enVerb = verb.en + "ed"; // semplificato
+  }
+
+  let en = subject + " " + enVerb + " " + object + " " + time;
+
+  current = {it, en};
+
+  document.getElementById("question").innerText = it;
   document.getElementById("answer").value = "";
   document.getElementById("feedback").innerText = "";
 }
 
+// controllo risposta
 function check(){
   let user = document.getElementById("answer").value.trim().toLowerCase();
-  let correctAnswers = phrases[current].en;
+  let correct = current.en;
 
   let feedback = document.getElementById("feedback");
   let btn = document.getElementById("checkBtn");
 
-  if(correctAnswers.includes(user)){
+  if(user === correct){
     feedback.innerText = "✅ Correct!";
   } else {
-    feedback.innerText = "❌ Correct: " + correctAnswers[0];
+    feedback.innerText = "❌ Correct: " + correct;
   }
 
-  // blocca bottone
   btn.disabled = true;
 
-  // dopo 1.5s cambia frase
   setTimeout(() => {
     btn.disabled = false;
-    loadQuestion();
+    generate();
   }, 1500);
 }
 
-// prima frase
-loadQuestion();
+// avvio
+generate();
 
 </script>
 
