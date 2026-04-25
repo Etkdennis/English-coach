@@ -1,146 +1,88 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>English Coach PRO</title>
+const exercises = [
 
-<style>
-body {
-  font-family: -apple-system, Arial;
-  background: linear-gradient(135deg,#141e30,#243b55);
-  margin:0;
-  padding:20px;
-  color:#fff;
+//// PAST SIMPLE (tempo finito)
+
+{
+  it:"Ieri ho mangiato",
+  verb:"eat",
+  correct:["i ate yesterday"]
+},
+{
+  it:"Ieri ho visto un amico",
+  verb:"see",
+  correct:["i saw a friend yesterday"]
+},
+{
+  it:"Stamattina ho preso il treno",
+  verb:"take",
+  correct:["i took the train this morning"]
+},
+{
+  it:"Ieri ho scritto un messaggio",
+  verb:"write",
+  correct:["i wrote a message yesterday"]
+},
+
+//// PRESENT PERFECT (collegato al presente)
+
+{
+  it:"Ho già mangiato",
+  verb:"eat",
+  correct:["i have already eaten"]
+},
+{
+  it:"Ho già visto quel film",
+  verb:"see",
+  correct:["i have already seen that movie"]
+},
+{
+  it:"Ho appena scritto un messaggio",
+  verb:"write",
+  correct:["i have just written a message"]
+},
+{
+  it:"Ho già preso il treno oggi",
+  verb:"take",
+  correct:["i have already taken the train today"]
+},
+
+//// ESPERIENZA (present perfect)
+
+{
+  it:"Sono già stato a Londra",
+  verb:"be",
+  correct:["i have been to london"]
+},
+{
+  it:"Ho già fatto palestra oggi",
+  verb:"do",
+  correct:["i have done a workout today"]
+},
+
+//// NEGATIVE (fondamentali per parlare)
+
+{
+  it:"Non ho mangiato",
+  verb:"eat",
+  correct:["i have not eaten","i haven't eaten"]
+},
+{
+  it:"Non ho visto niente",
+  verb:"see",
+  correct:["i haven't seen anything"]
+},
+
+//// DOMANDE (livello reale)
+
+{
+  it:"Hai già mangiato?",
+  verb:"eat",
+  correct:["have you eaten"]
+},
+{
+  it:"Hai visto quel film?",
+  verb:"see",
+  correct:["have you seen that movie"]
 }
-.container { max-width:500px; margin:auto; }
 
-h1 { text-align:center; margin-bottom:10px; }
-
-.card {
-  background:#fff;
-  color:#333;
-  padding:20px;
-  border-radius:20px;
-  box-shadow:0 10px 25px rgba(0,0,0,0.3);
-}
-
-input {
-  width:100%;
-  padding:14px;
-  border-radius:12px;
-  border:1px solid #ddd;
-  margin-top:12px;
-  font-size:16px;
-}
-
-button {
-  margin-top:12px;
-  padding:14px;
-  width:100%;
-  border:none;
-  border-radius:12px;
-  background:#00c853;
-  color:white;
-  font-weight:bold;
-  font-size:16px;
-}
-
-.feedback { margin-top:12px; font-size:14px; line-height:1.4; }
-
-.correct { background:#c8f7c5 !important; }
-.wrong { background:#ffcdd2 !important; }
-
-.progress {
-  height:6px;
-  background:#ffffff33;
-  border-radius:10px;
-  margin-bottom:15px;
-  overflow:hidden;
-}
-.bar {
-  height:100%;
-  width:0%;
-  background:#00e5ff;
-  transition:0.3s;
-}
-</style>
-</head>
-
-<body>
-
-<div class="container">
-<h1>English Coach PRO 🧠</h1>
-
-<div class="progress"><div class="bar" id="bar"></div></div>
-
-<div class="card">
-  <div id="question"></div>
-  <input id="answer" placeholder="Speak/write your answer..." />
-  <button onclick="check()">Check</button>
-  <div id="feedback" class="feedback"></div>
-</div>
-
-</div>
-
-<script>
-
-const data = [
-{it:"Oggi sono andato in palestra", correct:["i went to the gym today","today i went to the gym"]},
-{it:"Ho mangiato", correct:["i have eaten","i ate"]},
-{it:"Ho scritto un messaggio", correct:["i have written a message","i wrote a message"]},
-{it:"Ho preso il treno", correct:["i have taken the train","i took the train"]},
-{it:"Ho visto un amico", correct:["i have seen a friend","i saw a friend"]}
 ];
-
-let current;
-let progress = 0;
-
-function normalize(s){
-  return s.toLowerCase().replace(/[.,!?]/g,'').trim();
-}
-
-function generate(){
-  current = data[Math.floor(Math.random()*data.length)];
-  document.getElementById("question").innerText = current.it;
-  document.getElementById("answer").value = "";
-  document.getElementById("feedback").innerHTML = "";
-}
-
-function analyze(user){
-  if(user.includes("have") && user.includes("wrote")) return "Use 'written' (past participle)";
-  if(user.includes("have") && user.includes("ate")) return "Use 'eaten' (past participle)";
-  if(user.includes("have") && user.includes("took")) return "Use 'taken' (past participle)";
-  if(!user.startsWith("i")) return "Start with subject: I + verb";
-  return "Keep sentence simple: Subject + verb + object";
-}
-
-function check(){
-  let input = document.getElementById("answer");
-  let user = normalize(input.value);
-
-  let ok = current.correct.some(c => normalize(c) === user);
-
-  if(ok){
-    input.className = "correct";
-    document.getElementById("feedback").innerHTML = "✅ Natural sentence";
-    progress++;
-  } else {
-    input.className = "wrong";
-    document.getElementById("feedback").innerHTML =
-      "❌ Not correct<br>" +
-      "✔ Example: <b>" + current.correct[0] + "</b><br>" +
-      "💡 " + analyze(user);
-  }
-
-  document.getElementById("bar").style.width = (progress*10) + "%";
-
-  setTimeout(generate,2000);
-}
-
-generate();
-
-</script>
-
-</body>
-</html>
