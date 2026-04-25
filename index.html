@@ -1,42 +1,40 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>English Coach AI</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>English Coach AI</title>
 
-  <style>
-    body {
-      font-family: Arial;
-      background: linear-gradient(135deg,#141e30,#243b55);
-      color:white;
-      padding:20px;
-      text-align:center;
-    }
-
-    .card {
-      background:white;
-      color:black;
-      padding:20px;
-      border-radius:15px;
-      max-width:400px;
-      margin:auto;
-    }
-
-    input {
-      width:100%;
-      padding:12px;
-      margin-top:10px;
-    }
-
-    button {
-      margin-top:10px;
-      padding:12px;
-      width:100%;
-      background:#00c853;
-      color:white;
-      border:none;
-    }
-  </style>
+<style>
+body {
+  font-family: Arial;
+  background: linear-gradient(135deg,#141e30,#243b55);
+  color:white;
+  padding:20px;
+}
+.card {
+  background:white;
+  color:black;
+  padding:20px;
+  border-radius:15px;
+}
+input {
+  width:100%;
+  padding:12px;
+  margin-top:10px;
+}
+button {
+  margin-top:10px;
+  padding:12px;
+  width:100%;
+  background:#00c853;
+  color:white;
+  border:none;
+}
+#feedback {
+  margin-top:15px;
+  font-weight:bold;
+}
+</style>
 </head>
 
 <body>
@@ -45,7 +43,7 @@
 
 <div class="card">
   <div id="question">Ho mangiato ieri</div>
-  <input id="answer" placeholder="Write here..." />
+  <input id="answer" placeholder="Write or speak..." />
   <button onclick="checkTranslation()">Check</button>
   <div id="feedback"></div>
 </div>
@@ -53,6 +51,8 @@
 <script>
 async function checkTranslation() {
   const input = document.getElementById("answer").value;
+
+  document.getElementById("feedback").innerText = "Thinking... 🤖";
 
   const response = await fetch("/check", {
     method: "POST",
