@@ -2,7 +2,7 @@
 <html>
 <head>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>English App</title>
+<title>English Trainer PRO</title>
 
 <style>
 body {
@@ -10,210 +10,205 @@ body {
   background: linear-gradient(135deg,#141e30,#243b55);
   color:white;
   padding:20px;
+  text-align:center;
 }
-.container {
+.card {
+  background:white;
+  color:black;
+  padding:20px;
+  border-radius:15px;
   max-width:420px;
   margin:auto;
 }
-.top {
-  text-align:center;
+.context {
+  font-size:14px;
+  opacity:0.7;
   margin-bottom:10px;
 }
-.stats {
-  display:flex;
-  justify-content:space-between;
-  font-size:14px;
-}
-.chat {
-  background:white;
-  color:black;
-  border-radius:15px;
-  padding:10px;
-  height:360px;
-  overflow-y:auto;
-}
-.msg {
-  padding:10px;
-  margin:6px 0;
-  border-radius:10px;
-  max-width:80%;
-}
-.user {
-  background:#00c853;
-  color:white;
-  margin-left:auto;
-}
-.bot {
-  background:#eee;
-}
-.inputBox {
-  display:flex;
+input {
+  width:100%;
+  padding:12px;
   margin-top:10px;
 }
-input {
-  flex:1;
-  padding:12px;
-}
 button {
+  margin-top:10px;
   padding:12px;
+  width:100%;
   background:#00c853;
   color:white;
   border:none;
 }
-select {
-  margin-top:5px;
-  padding:5px;
+#feedback {
+  margin-top:15px;
+  font-weight:bold;
 }
 </style>
 </head>
 
 <body>
 
-<div class="container">
+<h2>English Trainer 🎯</h2>
 
-<div class="top">
-  <h2>English App 🚀</h2>
+<div class="card">
+  <div class="context" id="context"></div>
+  <div id="question"></div>
 
-  <div class="stats">
-    <div>🔥 <span id="streak">0</span></div>
-    <div>📊 <span id="level">A1</span></div>
-    <div>🎯 <span id="goal">0</span>/10</div>
-  </div>
+  <input id="answer" placeholder="Translate..." />
+  <button onclick="check()">Check</button>
 
-  <select id="mode">
-    <option value="chat">Chat</option>
-    <option value="training">Training</option>
-    <option value="past">Past Focus</option>
-    <option value="questions">Questions</option>
-  </select>
-</div>
-
-<div class="chat" id="chat"></div>
-
-<div class="inputBox">
-  <input id="input" placeholder="Write..." />
-  <button onclick="send()">Send</button>
-</div>
-
+  <div id="feedback"></div>
 </div>
 
 <script>
 
-// STATO
-let streak = parseInt(localStorage.getItem("streak")||0);
-let goal = parseInt(localStorage.getItem("goal")||0);
-let score = parseInt(localStorage.getItem("score")||0);
+// 30 SCENARI
+let scenarios = [
+"Aeroporto","Bar","Ristorante","Hotel","Taxi","Lavoro","Telefono","Amico",
+"Viaggio","Negozio","Supermercato","Palestra","Casa","Cinema","Strada",
+"Ufficio","Colloquio","Riunione","Ospedale","Farmacia","Scuola",
+"Università","Treno","Bus","Noleggio auto","Spiaggia","Montagna",
+"Centro città","Appuntamento","Weekend"
+];
 
-// UI
-const chat = document.getElementById("chat");
+// INTENZIONI REALI
+let intents = [
 
-function addMsg(text, cls){
-  let div = document.createElement("div");
-  div.className = "msg " + cls;
-  div.innerText = text;
-  chat.appendChild(div);
-  chat.scrollTop = chat.scrollHeight;
+{it:"Vorrei", en:"I would like"},
+{it:"Posso avere", en:"Can I have"},
+{it:"Ho bisogno di", en:"I need"},
+{it:"Cerco", en:"I am looking for"},
+{it:"Voglio", en:"I want"},
+{it:"Devo", en:"I have to"}
+
+];
+
+// OGGETTI LOGICI
+let objects = [
+{it:"un caffè", en:"a coffee"},
+{it:"un biglietto", en:"a ticket"},
+{it:"un taxi", en:"a taxi"},
+{it:"il menu", en:"the menu"},
+{it:"informazioni", en:"information"},
+{it:"aiuto", en:"help"},
+{it:"una stanza", en:"a room"},
+{it:"acqua", en:"water"}
+];
+
+// LUOGHI
+let places = [
+{it:"per Londra", en:"to London"},
+{it:"in centro", en:"to the city center"},
+{it:"qui", en:"here"},
+{it:"al lavoro", en:"at work"},
+{it:"a casa", en:"at home"},
+{it:"all’hotel", en:"at the hotel"}
+];
+
+// DOMANDE
+let questions = [
+{it:"Dove si trova", en:"Where is"},
+{it:"Quanto costa", en:"How much is"},
+{it:"A che ora è", en:"What time is"},
+{it:"Posso sapere", en:"Can I know"}
+];
+
+// FRASE CORRENTE
+let current = {};
+
+// RANDOM
+function rand(arr){
+  return arr[Math.floor(Math.random()*arr.length)];
 }
 
-// AGGIORNA UI
-function updateUI(){
-  document.getElementById("streak").innerText = streak;
-  document.getElementById("goal").innerText = goal;
+// GENERAZIONE INTELLIGENTE
+function generate(){
 
-  let lvl = "A1";
-  if(score>10) lvl="A2";
-  if(score>30) lvl="B1";
-  if(score>60) lvl="B2";
+  let scenario = rand(scenarios);
 
-  document.getElementById("level").innerText = lvl;
+  let type = Math.random();
 
-  localStorage.setItem("streak",streak);
-  localStorage.setItem("goal",goal);
-  localStorage.setItem("score",score);
+  let it = "";
+  let en = "";
+
+  // 70% frasi normali
+  if(type < 0.7){
+
+    let intent = rand(intents);
+    let obj = rand(objects);
+    let place = rand(places);
+
+    it = `${intent.it} ${obj.it} ${place.it}`;
+    en = `${intent.en} ${obj.en} ${place.en}`;
+
+  } 
+  // 30% domande
+  else {
+
+    let q = rand(questions);
+    let obj = rand(objects);
+
+    it = `${q.it} ${obj.it}`;
+    en = `${q.en} ${obj.en}`;
+
+  }
+
+  current = {it, en};
+
+  document.getElementById("context").innerText = "📍 " + scenario;
+  document.getElementById("question").innerText = it;
+
+  document.getElementById("answer").value = "";
+  document.getElementById("feedback").innerText = "";
 }
 
 // NORMALIZE
-function normalize(t){
-  return t.toLowerCase()
+function normalize(text){
+  return text
+    .toLowerCase()
     .replace("i'm","i am")
     .replace("don't","do not")
     .replace(/[.,!?]/g,"")
+    .replace(/\b(a|an|the)\b/g,"")
+    .replace(/\s+/g," ")
     .trim();
 }
 
-// ANALISI
-function analyze(text){
-
-  let t = normalize(text);
-
-  if(t.length < 4){
-    return {ok:false, msg:"❌ Too short"};
-  }
-
-  if(!t.includes(" ")){
-    return {ok:false, msg:"🟡 Use full sentence"};
-  }
-
-  return {ok:true, msg:"✅ Good!"};
+// SIMILARITY
+function similarity(a,b){
+  let A = a.split(" ");
+  let B = b.split(" ");
+  let match = A.filter(w => B.includes(w)).length;
+  return match / Math.max(A.length,B.length);
 }
 
-// TRAINING PROMPTS
-function prompt(mode){
+// CHECK
+function check(){
 
-  if(mode==="past"){
-    return "👉 Say something in past";
+  let user = normalize(document.getElementById("answer").value);
+  let correct = normalize(current.en);
+
+  let sim = similarity(user, correct);
+
+  let feedback = document.getElementById("feedback");
+  let delay = 1500;
+
+  if(user === correct){
+    feedback.innerText = "✅ Perfect!";
+  }
+  else if(sim > 0.7){
+    feedback.innerText = "🟡 Almost → " + current.en;
+    delay = 4000;
+  }
+  else{
+    feedback.innerText = "❌ " + current.en;
+    delay = 8000;
   }
 
-  if(mode==="questions"){
-    return "👉 Ask a question";
-  }
-
-  return "👉 Say something natural";
-}
-
-// SEND
-function send(){
-
-  let input = document.getElementById("input");
-  let text = input.value.trim();
-  if(!text) return;
-
-  addMsg(text,"user");
-  input.value="";
-
-  let mode = document.getElementById("mode").value;
-
-  let result = analyze(text);
-
-  if(result.ok){
-    score++;
-    goal++;
-    streak++;
-  } else {
-    streak = 0;
-  }
-
-  updateUI();
-
-  addMsg(result.msg,"bot");
-
-  // FEEDBACK EXTRA
-  if(mode==="past" && !text.includes("ed")){
-    addMsg("👉 Try past tense (worked, went...)", "bot");
-  }
-
-  if(mode==="questions" && !text.includes("?")){
-    addMsg("👉 Ask a question (Do you...?)", "bot");
-  }
-
-  setTimeout(()=>{
-    addMsg(prompt(mode),"bot");
-  },800);
+  setTimeout(generate, delay);
 }
 
 // START
-updateUI();
-addMsg("Start speaking 👇","bot");
+generate();
 
 </script>
 
