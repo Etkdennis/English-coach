@@ -33,9 +33,6 @@ button {
   color:white;
   border:none;
 }
-.topbar {
-  margin-bottom:10px;
-}
 #feedback {
   margin-top:15px;
   font-weight:bold;
@@ -46,12 +43,6 @@ button {
 <body>
 
 <h2>English Trainer 🧠</h2>
-
-<div class="topbar">
-❤️ <span id="lives"></span> |
-⭐ <span id="score">0</span> |
-🔥 <span id="streak">0</span>
-</div>
 
 <div class="card">
   <div id="question"></div>
@@ -65,12 +56,7 @@ button {
 
 <script>
 
-// STATS
-let lives = parseInt(localStorage.getItem("lives")) || 3;
-let score = parseInt(localStorage.getItem("score")) || 0;
-let streak = parseInt(localStorage.getItem("streak")) || 0;
-
-// FRASI REALI (puoi aggiungerne quante vuoi)
+// FRASI REALI
 let sentences = [
   {it:"Io ascolto musica", en:"I listen to music"},
   {it:"Loro ascoltano musica", en:"They listen to music"},
@@ -94,14 +80,38 @@ let sentences = [
 
 let current = {};
 
-// UI
-function updateStats(){
-  document.getElementById("lives").innerText = "❤️".repeat(lives);
-  document.getElementById("score").innerText = score;
-  document.getElementById("streak").innerText = streak;
+// NORMALIZE (intelligente)
+function normalize(text){
+  return text
+    .toLowerCase()
+    .replace("i'm", "i am")
+    .replace("you're", "you are")
+    .replace("we're", "we are")
+    .replace("they're", "they are")
+    .replace("it's", "it is")
+    .replace("don't", "do not")
+    .replace("can't", "cannot")
+    .replace(/[.,!?]/g, "")
+    .replace(/\b(a|an|the)\b/g, "")
+    .replace(/\s+/g, " ")
+    .trim();
 }
 
-// GENERATE
+// SIMILARITÀ
+function similarity(a, b){
+  let wordsA = a.split(" ");
+  let wordsB = b.split(" ");
+
+  let matches = 0;
+
+  wordsA.forEach(word => {
+    if(wordsB.includes(word)) matches++;
+  });
+
+  return matches / Math.max(wordsA.length, wordsB.length);
+}
+
+// GENERA FRASE
 function generate(){
   current = sentences[Math.floor(Math.random() * sentences.length)];
 
@@ -110,48 +120,38 @@ function generate(){
   document.getElementById("feedback").innerText = "";
 }
 
-// CHECK
+// CHECK INTELLIGENTE
 function check(){
 
-  let user = document.getElementById("answer").value.trim().toLowerCase();
-  let correct = current.en.toLowerCase();
+  let userRaw = document.getElementById("answer").value;
+  let correctRaw = current.en;
+
+  let user = normalize(userRaw);
+  let correct = normalize(correctRaw);
+
+  let scoreMatch = similarity(user, correct);
 
   let feedback = document.getElementById("feedback");
   let delay = 1500;
 
   if(user === correct){
-    feedback.innerText = "✅ Correct!";
-    score += 10;
-    streak++;
-  } else {
-    feedback.innerText = "❌ " + current.en;
-    lives--;
-    streak = 0;
-    delay = 10000;
+    feedback.innerText = "✅ Perfect!";
   }
 
-  localStorage.setItem("lives", lives);
-  localStorage.setItem("score", score);
-  localStorage.setItem("streak", streak);
+  else if(scoreMatch > 0.7){
+    feedback.innerText = "🟡 Almost correct → " + correctRaw;
+    delay = 5000;
+  }
 
-  updateStats();
-
-  if(lives <= 0){
-    feedback.innerText = "💀 Game Over";
-    setTimeout(() => {
-      localStorage.clear();
-      lives = 3; score = 0; streak = 0;
-      updateStats();
-      generate();
-    }, 2000);
-    return;
+  else{
+    feedback.innerText = "❌ " + correctRaw;
+    delay = 10000;
   }
 
   setTimeout(generate, delay);
 }
 
 // START
-updateStats();
 generate();
 
 </script>
