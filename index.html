@@ -2,7 +2,7 @@
 <html>
 <head>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>English Trainer Lite</title>
+<title>English Trainer PRO</title>
 
 <style>
 body {
@@ -17,7 +17,7 @@ body {
   color:black;
   padding:20px;
   border-radius:15px;
-  max-width:400px;
+  max-width:420px;
   margin:auto;
 }
 input {
@@ -33,68 +33,199 @@ button {
   color:white;
   border:none;
 }
+.topbar {
+  margin-bottom:10px;
+}
 #feedback {
   margin-top:15px;
   font-weight:bold;
+}
+select {
+  margin-bottom:10px;
+  padding:8px;
 }
 </style>
 </head>
 
 <body>
 
-<h2>English Trainer 🎤</h2>
+<h2>English Trainer 🚀</h2>
+
+<div class="topbar">
+❤️ <span id="lives"></span> |
+⭐ <span id="score">0</span> |
+🔥 <span id="streak">0</span>
+</div>
+
+<select id="mode">
+  <option value="write">✍️ Writing</option>
+  <option value="listen">🎧 Listening</option>
+  <option value="speak">🎤 Speaking</option>
+</select>
 
 <div class="card">
   <div id="question"></div>
 
-  <input id="answer" placeholder="Write or speak..." />
+  <input id="answer" placeholder="Your answer..." />
 
   <button onclick="check()">Check</button>
   <button onclick="startVoice()">🎤 Speak</button>
+  <button onclick="playAudio()">🔊 Listen</button>
 
   <div id="feedback"></div>
 </div>
 
 <script>
 
-// DATI BASE
-let phrases = [
-  {it:"Ho mangiato ieri", en:"i ate yesterday"},
-  {it:"Vado al lavoro", en:"i go to work"},
-  {it:"Sto studiando inglese", en:"i am studying english"},
-  {it:"Ho visto quel film", en:"i saw that movie"},
-  {it:"Mi piace il caffè", en:"i like coffee"}
+// STATS
+let lives = parseInt(localStorage.getItem("lives")) || 3;
+let score = parseInt(localStorage.getItem("score")) || 0;
+let streak = parseInt(localStorage.getItem("streak")) || 0;
+
+// COMPONENTI (GENERANO 2000+ FRASI)
+let subjects = [
+  {it:"Io", en:"I"},
+  {it:"Tu", en:"You"},
+  {it:"Noi", en:"We"},
+  {it:"Loro", en:"They"}
+];
+
+let verbs = [
+  {it:"mangio", en:"eat", past:"ate"},
+  {it:"bevo", en:"drink", past:"drank"},
+  {it:"vedo", en:"see", past:"saw"},
+  {it:"compro", en:"buy", past:"bought"},
+  {it:"trovo", en:"find", past:"found"},
+  {it:"guardo", en:"watch", past:"watched"},
+  {it:"studio", en:"study", past:"studied"},
+  {it:"ascolto", en:"listen", past:"listened"}
+];
+
+let objects = [
+  {it:"un libro", en:"a book"},
+  {it:"un film", en:"a movie"},
+  {it:"un panino", en:"a sandwich"},
+  {it:"un caffè", en:"a coffee"},
+  {it:"musica", en:"music"},
+  {it:"inglese", en:"english"}
+];
+
+let places = [
+  {it:"a casa", en:"at home"},
+  {it:"al lavoro", en:"at work"},
+  {it:"al bar", en:"at the bar"},
+  {it:"in ufficio", en:"in the office"}
+];
+
+let times = [
+  {it:"oggi", type:"present", en:"today"},
+  {it:"ieri", type:"past", en:"yesterday"},
+  {it:"domani", type:"future", en:"tomorrow"}
 ];
 
 let current = {};
 
-// GENERA FRASE
+// UI
+function updateStats(){
+  document.getElementById("lives").innerText = "❤️".repeat(lives);
+  document.getElementById("score").innerText = score;
+  document.getElementById("streak").innerText = streak;
+}
+
+// RANDOM
+function rand(arr){
+  return arr[Math.floor(Math.random() * arr.length)];
+}
+
+// GENERATE
 function generate(){
-  current = phrases[Math.floor(Math.random() * phrases.length)];
-  document.getElementById("question").innerText = current.it;
+
+  let subject = rand(subjects);
+  let verb = rand(verbs);
+  let object = rand(objects);
+  let place = rand(places);
+  let time = rand(times);
+
+  let it = `${subject.it} ${verb.it} ${object.it} ${place.it} ${time.it}`;
+
+  let en = "";
+
+  if(time.type === "present"){
+    en = `${subject.en} ${verb.en} ${object.en} ${place.en} ${time.en}`;
+  }
+
+  if(time.type === "past"){
+    en = `${subject.en} ${verb.past} ${object.en} ${place.en} ${time.en}`;
+  }
+
+  if(time.type === "future"){
+    en = `${subject.en} will ${verb.en} ${object.en} ${place.en} ${time.en}`;
+  }
+
+  current = {it, en};
+
+  let mode = document.getElementById("mode").value;
+
+  if(mode === "write"){
+    document.getElementById("question").innerText = it;
+  }
+
+  if(mode === "listen"){
+    document.getElementById("question").innerText = "🎧 Listen...";
+    playAudio();
+  }
+
+  if(mode === "speak"){
+    document.getElementById("question").innerText = it;
+  }
+
   document.getElementById("answer").value = "";
   document.getElementById("feedback").innerText = "";
 }
 
 // CHECK
 function check(){
+
   let user = document.getElementById("answer").value.trim().toLowerCase();
   let correct = current.en;
 
+  let feedback = document.getElementById("feedback");
+
   if(user === correct){
-    document.getElementById("feedback").innerText = "✅ Correct!";
+    feedback.innerText = "✅ Correct!";
+    score += 10;
+    streak++;
   } else {
-    document.getElementById("feedback").innerText = "❌ Correct: " + correct;
+    feedback.innerText = "❌ " + correct;
+    lives--;
+    streak = 0;
+  }
+
+  localStorage.setItem("lives", lives);
+  localStorage.setItem("score", score);
+  localStorage.setItem("streak", streak);
+
+  updateStats();
+
+  if(lives <= 0){
+    feedback.innerText = "💀 Game Over";
+    setTimeout(() => {
+      localStorage.clear();
+      lives = 3; score = 0; streak = 0;
+      updateStats();
+      generate();
+    }, 2000);
+    return;
   }
 
   setTimeout(generate, 1500);
 }
 
-// 🎤 VOCE (Speech Recognition)
+// 🎤 VOICE INPUT
 function startVoice(){
 
   if (!('webkitSpeechRecognition' in window)) {
-    alert("Voice not supported on this device");
+    alert("Voice not supported");
     return;
   }
 
@@ -103,12 +234,20 @@ function startVoice(){
   recognition.start();
 
   recognition.onresult = function(event) {
-    let text = event.results[0][0].transcript;
-    document.getElementById("answer").value = text;
+    document.getElementById("answer").value =
+      event.results[0][0].transcript;
   };
 }
 
-// start
+// 🔊 AUDIO
+function playAudio(){
+  let utterance = new SpeechSynthesisUtterance(current.en);
+  utterance.lang = "en-US";
+  speechSynthesis.speak(utterance);
+}
+
+// START
+updateStats();
 generate();
 
 </script>
