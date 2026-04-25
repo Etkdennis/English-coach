@@ -2,7 +2,7 @@
 <html>
 <head>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>English Trainer</title>
+<title>English Trainer Lite</title>
 
 <style>
 body {
@@ -42,86 +42,73 @@ button {
 
 <body>
 
-<h2>English Trainer 🧠</h2>
+<h2>English Trainer 🎤</h2>
 
 <div class="card">
   <div id="question"></div>
-  <input id="answer" placeholder="Write your translation..." />
-  <button id="checkBtn" onclick="check()">Check</button>
+
+  <input id="answer" placeholder="Write or speak..." />
+
+  <button onclick="check()">Check</button>
+  <button onclick="startVoice()">🎤 Speak</button>
+
   <div id="feedback"></div>
 </div>
 
 <script>
 
-// VOCABOLI
-let subjects = ["i", "you", "we", "they"];
-let verbs = [
-  {it:"mangio", en:"eat"},
-  {it:"bevo", en:"drink"},
-  {it:"vedo", en:"see"},
-  {it:"compro", en:"buy"},
-  {it:"trovo", en:"find"}
+// DATI BASE
+let phrases = [
+  {it:"Ho mangiato ieri", en:"i ate yesterday"},
+  {it:"Vado al lavoro", en:"i go to work"},
+  {it:"Sto studiando inglese", en:"i am studying english"},
+  {it:"Ho visto quel film", en:"i saw that movie"},
+  {it:"Mi piace il caffè", en:"i like coffee"}
 ];
-let objects = ["pane", "caffè", "un film", "un libro"];
-let times = ["oggi", "ieri", "domani"];
 
-// stato corrente
 let current = {};
 
-// funzione random
-function rand(arr){
-  return arr[Math.floor(Math.random() * arr.length)];
-}
-
-// genera frase
+// GENERA FRASE
 function generate(){
-  let subject = rand(subjects);
-  let verb = rand(verbs);
-  let object = rand(objects);
-  let time = rand(times);
-
-  // italiano
-  let it = subject + " " + verb.it + " " + object + " " + time;
-
-  // inglese base
-  let enVerb = verb.en;
-
-  if(time === "ieri"){
-    enVerb = verb.en + "ed"; // semplificato
-  }
-
-  let en = subject + " " + enVerb + " " + object + " " + time;
-
-  current = {it, en};
-
-  document.getElementById("question").innerText = it;
+  current = phrases[Math.floor(Math.random() * phrases.length)];
+  document.getElementById("question").innerText = current.it;
   document.getElementById("answer").value = "";
   document.getElementById("feedback").innerText = "";
 }
 
-// controllo risposta
+// CHECK
 function check(){
   let user = document.getElementById("answer").value.trim().toLowerCase();
   let correct = current.en;
 
-  let feedback = document.getElementById("feedback");
-  let btn = document.getElementById("checkBtn");
-
   if(user === correct){
-    feedback.innerText = "✅ Correct!";
+    document.getElementById("feedback").innerText = "✅ Correct!";
   } else {
-    feedback.innerText = "❌ Correct: " + correct;
+    document.getElementById("feedback").innerText = "❌ Correct: " + correct;
   }
 
-  btn.disabled = true;
-
-  setTimeout(() => {
-    btn.disabled = false;
-    generate();
-  }, 1500);
+  setTimeout(generate, 1500);
 }
 
-// avvio
+// 🎤 VOCE (Speech Recognition)
+function startVoice(){
+
+  if (!('webkitSpeechRecognition' in window)) {
+    alert("Voice not supported on this device");
+    return;
+  }
+
+  let recognition = new webkitSpeechRecognition();
+  recognition.lang = "en-US";
+  recognition.start();
+
+  recognition.onresult = function(event) {
+    let text = event.results[0][0].transcript;
+    document.getElementById("answer").value = text;
+  };
+}
+
+// start
 generate();
 
 </script>
