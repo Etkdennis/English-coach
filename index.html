@@ -1,104 +1,27 @@
 <!DOCTYPE html>
 <html>
 <head>
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>English Coach AI</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>English Coach AI</title>
 
-<style>
-body {
-  font-family: Arial;
-  background: linear-gradient(135deg,#141e30,#243b55);
-  color:white;
-  padding:20px;
-}
-.card {
-  background:white;
-  color:black;
-  padding:20px;
-  border-radius:15px;
-}
-input {
-  width:100%;
-  padding:12px;
-  margin-top:10px;
-}
-button {
-  margin-top:10px;
-  padding:12px;
-  width:100%;
-  background:#00c853;
-  color:white;
-  border:none;
-}
-</style>
-</head>
+  <style>
+    body {
+      font-family: Arial;
+      background: linear-gradient(135deg, #141e30, #243b55);
+      color: white;
+      padding: 20px;
+      text-align: center;
+    }
 
-<body>
+    .card {
+      background: white;
+      color: black;
+      padding: 20px;
+      border-radius: 15px;
+      max-width: 400px;
+      margin: auto;
+    }
 
-<h2>English Coach AI 🧠</h2>
-
-<div class="card">
-  <div id="question">Ho mangiato ieri</div>
-  <input id="answer" placeholder="Write or speak..." />
-  <button onclick="checkTranslation()">Check</button>
-  <div id="feedback"></div>
-</div>
-
-<script>
-async function checkTranslation() {
-  const input = document.getElementById("answer").value;
-
-  const response = await fetch("/check", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json"
-    },
-    body: JSON.stringify({ text: input })
-  });
-
-  const data = await response.json();
-
-  document.getElementById("result").innerText = data.result;
-}
-</script>
-
-async function check(){
-
-  let user = document.getElementById("answer").value;
-
-  let prompt = `
-You are an English teacher.
-Correct this sentence:
-
-"${user}"
-
-Explain:
-1. If it's correct
-2. If wrong, why
-3. Give correct sentence
-
-Keep it simple.
-`;
-
-  let response = await fetch("https://api.openai.com/v1/chat/completions", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      "Authorization": "Bearer YOUR_API_KEY_HERE"
-    },
-    body: JSON.stringify({
-      model: "gpt-4.1-mini",
-      messages: [{role:"user", content: prompt}]
-    })
-  });
-
-  let data = await response.json();
-
-  document.getElementById("feedback").innerText =
-    data.choices[0].message.content;
-}
-
-</script>
-
-</body>
-</html>
+    input {
+      width: 100%;
+      padding: 12
