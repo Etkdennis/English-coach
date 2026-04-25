@@ -1,6 +1,9 @@
 const express = require("express");
 const path = require("path");
 
+// FIX FETCH
+const fetch = (...args) => import('node-fetch').then(({default: fetch}) => fetch(...args));
+
 const app = express();
 
 app.use(express.json());
@@ -40,10 +43,11 @@ app.post("/check", async (req, res) => {
     const data = await response.json();
 
     res.json({
-      result: data.choices[0].message.content
+      result: data.choices?.[0]?.message?.content || "Errore AI 😅"
     });
 
   } catch (err) {
+    console.log(err);
     res.json({
       result: "Errore AI 😅"
     });
